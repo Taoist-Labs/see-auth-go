@@ -44,7 +44,7 @@ func SignOffChainAttestation(privateKey *ecdsa.PrivateKey, typedData *apitypes.T
 	s := hexutil.EncodeBig(new(big.Int).SetBytes(sig[32:64]))
 	v := uint8(sig[64]) + 27
 
-	offChainUID := getOffChainUID(typedData.Message["version"].(uint16), typedData.Message["schema"].(string), typedData.Message["recipient"].(string), typedData.Message["time"].(uint64), typedData.Message["expirationTime"].(uint64), typedData.Message["revocable"].(bool), typedData.Message["refUID"].(string), typedData.Message["data"].(string))
+	offChainUID := getOffChainUID(typedData.Message)
 
 	return &Sig{
 		TypedData: typedData,
@@ -59,7 +59,7 @@ func SignOffChainAttestation(privateKey *ecdsa.PrivateKey, typedData *apitypes.T
 
 func VerifyOffChainAttestation(attester, recipient string, expectTypedData *apitypes.TypedData, sig *Sig) (bool, error) {
 	// verify OffChainUID
-	offChainUID := getOffChainUID(sig.Message["version"].(uint16), sig.Message["schema"].(string), sig.Message["recipient"].(string), sig.Message["time"].(uint64), sig.Message["expirationTime"].(uint64), sig.Message["revocable"].(bool), sig.Message["refUID"].(string), sig.Message["data"].(string))
+	offChainUID := getOffChainUID(sig.Message)
 	if offChainUID != sig.UID {
 		return false, errors.New("Proof Error: proof uid not match")
 	}
@@ -132,7 +132,7 @@ func signHash(typedData *apitypes.TypedData) ([]byte, error) {
 	return crypto.Keccak256(rawData), nil
 }
 
-func getOffChainUID(version uint16, schema, recipient string, time, expirationTime uint64, revocable bool, refUID, data string) string {
+func getOffChainUID(typedDataMessage apitypes.TypedDataMessage) string {
 	// uint16 `solidityPackedKeccak256(["uint16"], [1])` ==> `0x49d03a195e239b52779866b33024210fc7dc66e9c2998975c0aa45c1702549d5`
 	//i := uint16(1)
 	//b := make([]byte, 2)
@@ -168,12 +168,25 @@ func getOffChainUID(version uint16, schema, recipient string, time, expirationTi
 	//slice, _ := hexutil.Decode("0x0000000000000000000000000000000000000000000000000000000000000000")
 	//hash := crypto.Keccak256Hash(slice) // ok!
 
+	v, _ := strconv.ParseUint(typedDataMessage["version"].(string), 10, 16)
+	tim, _ := strconv.ParseUint(typedDataMessage["time"].(string), 10, 64)
+	expirationTime, _ := strconv.ParseUint(typedDataMessage["expirationTime"].(string), 10, 64)
+	var (
+		version   uint16 = uint16(v)
+		schema    string = fmt.Sprintf("%s", typedDataMessage["schema"])
+		recipient string = fmt.Sprintf("%s", typedDataMessage["recipient"])
+		revocable bool   = typedDataMessage["revocable"].(bool)
+		refUID    string = fmt.Sprintf("%s", typedDataMessage["refUID"])
+		data      string = fmt.Sprintf("%s", typedDataMessage["data"])
+	)
+
+	// `["uint16", "bytes", "address", "address", "uint64", "uint64", "bool", "bytes32", "bytes", "uint32"]`
 	hash := crypto.Keccak256Hash(
 		uin16Bytes(version),
 		bytesBytes(schema),
 		addressBytes(recipient),
 		addressBytes("0x0000000000000000000000000000000000000000"),
-		uint64Bytes(time),
+		uint64Bytes(tim),
 		uint64Bytes(expirationTime),
 		boolBytes(revocable),
 		bytes32Bytes(refUID),
