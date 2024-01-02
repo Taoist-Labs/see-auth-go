@@ -168,9 +168,9 @@ func getOffChainUID(typedDataMessage apitypes.TypedDataMessage) string {
 	//slice, _ := hexutil.Decode("0x0000000000000000000000000000000000000000000000000000000000000000")
 	//hash := crypto.Keccak256Hash(slice) // ok!
 
-	v, _ := strconv.ParseUint(typedDataMessage["version"].(string), 10, 16)
-	tim, _ := strconv.ParseUint(typedDataMessage["time"].(string), 10, 64)
-	expirationTime, _ := strconv.ParseUint(typedDataMessage["expirationTime"].(string), 10, 64)
+	v, _ := strconv.ParseUint(fmt.Sprintf("%s", typedDataMessage["version"]), 10, 16)
+	tim, _ := strconv.ParseUint(fmt.Sprintf("%s", typedDataMessage["time"]), 10, 64)
+	expirationTime, _ := strconv.ParseUint(fmt.Sprintf("%s", typedDataMessage["expirationTime"]), 10, 64)
 	var (
 		version   uint16 = uint16(v)
 		schema    string = fmt.Sprintf("%s", typedDataMessage["schema"])
