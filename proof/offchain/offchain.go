@@ -106,6 +106,28 @@ func VerifyOffChainAttestation(attester, recipient string, expectTypedData *apit
 	// v
 	bytes[64] = sig.Signature.V - 27
 	// start verify
+	// <---------------------------
+	// `EIP712Domain` is empty when proof generate by Node SDK
+	if sig.TypedData.Types["EIP712Domain"] == nil {
+		sig.TypedData.Types["EIP712Domain"] = []apitypes.Type{
+			{Name: "name", Type: "string"},
+			{Name: "version", Type: "string"},
+			{Name: "chainId", Type: "uint256"},
+			{Name: "verifyingContract", Type: "address"},
+		}
+	}
+	// `Attest` 's `nonce` is empty when proof generate by Node SDK
+	hasNonce := false
+	for _, t := range sig.TypedData.Types["Attest"] {
+		if t.Name == "nonce" {
+			hasNonce = true
+			break
+		}
+	}
+	if !hasNonce {
+		sig.TypedData.Types["Attest"] = append(sig.TypedData.Types["Attest"], apitypes.Type{Name: "nonce", Type: "string"})
+	}
+	// --------------------------->
 	hash, err := signHash(sig.TypedData)
 	if err != nil {
 		return false, err
