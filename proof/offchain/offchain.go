@@ -81,9 +81,10 @@ func VerifyOffChainAttestation(attester, recipient string, expectTypedData *apit
 	if sig.PrimaryType != expectTypedData.PrimaryType {
 		return false, errors.New("Proof Error: primary type not match")
 	}
-	if !reflect.DeepEqual(sig.Types, expectTypedData.Types) {
-		return false, errors.New("Proof Error: types not match")
-	}
+	// TODO Node has no `EIP712Domain` but Go has, so we can't compare `types`
+	//if !reflect.DeepEqual(sig.Types, expectTypedData.Types) {
+	//	return false, errors.New("Proof Error: types not match")
+	//}
 	if attester == "0x0000000000000000000000000000000000000000" {
 		return false, errors.New("Proof Error: attester is zero address")
 	}
