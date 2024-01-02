@@ -1,6 +1,7 @@
 package seeauth
 
 import (
+	"encoding/json"
 	"github.com/Taoist-Labs/see-auth-go/proof"
 	"github.com/Taoist-Labs/see-auth-go/signature"
 	"testing"
@@ -43,7 +44,13 @@ func TestFlow(t *testing.T) {
 	t.Logf("seeAuth = %+v", seeAuth.Signature)
 	t.Logf("seeAuth = %+v", seeAuth.Proof)
 
-	w, err := SeeDAOAuth(recipient, seeAuth)
+	j, _ := json.Marshal(seeAuth)
+	t.Logf("seeAuth JSON = %s", string(j))
+
+	var seeAuth2 SeeAuth
+	_ = json.Unmarshal(j, &seeAuth2)
+
+	w, err := SeeDAOAuth(recipient, &seeAuth2)
 	if err != nil {
 		t.Errorf("SeeDAOAuth() error = %v", err)
 		return

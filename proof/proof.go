@@ -52,6 +52,17 @@ var (
 	}
 )
 
+//type OffChainAttestationParams struct {
+//	version string
+//	schema string
+//	recipient string
+//	time uint64
+//	expirationTime uint64
+//	revocable bool
+//	refUID string
+//	data string
+//}
+
 type Proof struct {
 	Sig    *offchain.Sig `json:"sig"`
 	Signer string        `json:"signer"`
@@ -72,7 +83,7 @@ func Sign(recipient string, proofLifetime time.Duration, schemaData *SchemaData,
 		"time":           fmt.Sprintf("%d", time.Now().UTC().Unix()),                    // Unix timestamp of current time
 		"expirationTime": fmt.Sprintf("%d", time.Now().UTC().Add(proofLifetime).Unix()), // Unix timestamp of when attestation expires. (0 for no expiration)
 		"revocable":      true,                                                          // Be aware that if your schema is not revocable, this MUST be false
-		"version":        "1",
+		"version":        "1",                                                           // TODO: should be uint16, when is string https://polygon-mumbai.easscan.org/tools will not verify success
 		"nonce":          "0",
 		"schema":         schemaUID,
 		"refUID":         "0x0000000000000000000000000000000000000000000000000000000000000000",

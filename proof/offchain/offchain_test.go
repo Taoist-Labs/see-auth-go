@@ -196,27 +196,27 @@ func Test_getOffChainUID(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		args args
+		args apitypes.TypedDataMessage
 		want string
 	}{
 		{
 			name: "ok",
-			args: args{
-				version:        1,
-				schema:         "0x32275eb98dcb8f82848adef9fa52311cc9e83bc6fdb34c5f46ac4b8d957ad3d9",
-				recipient:      "0x0000000000000000000000000000000000000000",
-				time:           1703962538,
-				expirationTime: 1703962537,
-				revocable:      true,
-				refUID:         "0x0000000000000000000000000000000000000000000000000000000000000000",
-				data:           "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000036f732b0000000000000000000000000000000000000000000000000000000000",
+			args: apitypes.TypedDataMessage{
+				"version":        "1",
+				"schema":         "0x32275eb98dcb8f82848adef9fa52311cc9e83bc6fdb34c5f46ac4b8d957ad3d9",
+				"recipient":      "0x0000000000000000000000000000000000000000",
+				"time":           "1703962538",
+				"expirationTime": "1703962537",
+				"revocable":      true,
+				"refUID":         "0x0000000000000000000000000000000000000000000000000000000000000000",
+				"data":           "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000036f732b0000000000000000000000000000000000000000000000000000000000",
 			},
 			want: "0x27600687657c97bcdd6d137c62e727c805ac563b94fdc08b1ffe9d15cbd6f55d",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getOffChainUID(tt.args.version, tt.args.schema, tt.args.recipient, tt.args.time, tt.args.expirationTime, tt.args.revocable, tt.args.refUID, tt.args.data); got != tt.want {
+			if got := getOffChainUID(tt.args); got != tt.want {
 				t.Errorf("getOffChainUID() = %v, want = %v", got, tt.want)
 			}
 		})
