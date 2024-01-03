@@ -39,7 +39,7 @@ func SignOffChainAttestation(privateKey *ecdsa.PrivateKey, typedData *apitypes.T
 	if err != nil {
 		return nil, fmt.Errorf("generate signatrue error: %s", err)
 	}
-	//slog.Info(fmt.Sprintf("signature: %s", hexutil.Encode(signature)))
+	//fmt.Printf("signature: %s\n", hexutil.Encode(sig))
 	r := hexutil.EncodeBig(new(big.Int).SetBytes(sig[:32]))
 	s := hexutil.EncodeBig(new(big.Int).SetBytes(sig[32:64]))
 	v := uint8(sig[64]) + 27
@@ -132,11 +132,29 @@ func VerifyOffChainAttestation(attester, recipient string, expectTypedData *apit
 	if err != nil {
 		return false, err
 	}
+
+	//fmt.Printf("crypto.SigToPub('%s', '%s')\n", hexutil.Encode(hash), hexutil.Encode(bytes))
+
+	// method 1
 	pubKey, err := crypto.SigToPub(hash, bytes)
 	if err != nil {
 		return false, fmt.Errorf("verify signatrue error: %s", err)
 	}
 	return crypto.PubkeyToAddress(*pubKey).Hex() != attester, nil
+
+	// method 2
+	//privateKey, err := crypto.HexToECDSA("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
+	//publicKey := privateKey.Public()
+	//publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
+	//publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+	//return crypto.VerifySignature(publicKeyBytes, hash, bytes[:len(bytes)-1]), nil
+
+	// method 3
+	//pubKey, err := crypto.Ecrecover(hash, bytes)
+	//if err != nil {
+	//	return false, fmt.Errorf("verify signatrue error: %s", err)
+	//}
+	//return common.Bytes2Hex(pubKey) != attester, nil
 }
 
 func signHash(typedData *apitypes.TypedData) ([]byte, error) {

@@ -1,7 +1,6 @@
 package offchain
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -158,6 +157,36 @@ func TestVerifyOffChainAttestation(t *testing.T) {
 			want:    false,
 			wantErr: true,
 		},
+		{
+			name: "proof tttt",
+			args: args{
+				attester:  attester,
+				recipient: recipient,
+				typedData: &apitypes.TypedData{
+					Types:       types,
+					PrimaryType: primaryType,
+					Domain:      typedDataDomain,
+					Message: apitypes.TypedDataMessage{
+						"recipient":      "0x0000000000000000000000000000000000000000",
+						"time":           "1704249694", // Unix timestamp of current time
+						"expirationTime": "1704251294", // Unix timestamp of when attestation expires. (0 for no expiration)
+						"revocable":      true,         // Be aware that if your schema is not revocable, this MUST be false
+						"version":        "1",
+						"nonce":          "0",
+						"schema":         "0x32275eb98dcb8f82848adef9fa52311cc9e83bc6fdb34c5f46ac4b8d957ad3d9",
+						"refUID":         "0x0000000000000000000000000000000000000000000000000000000000000000",
+						"data":           "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000036f732b0000000000000000000000000000000000000000000000000000000000",
+					},
+				},
+				expectTypedData: &apitypes.TypedData{
+					Types:       types,
+					PrimaryType: primaryType,
+					Domain:      typedDataDomain,
+				},
+			},
+			want:    true,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -166,10 +195,8 @@ func TestVerifyOffChainAttestation(t *testing.T) {
 				t.Errorf("SignOffChainAttestation() error = %v", err)
 				return
 			}
-			s, _ := json.Marshal(sig.Signature)
-			t.Logf("sig: %s", string(s))
-			// offchain_test.go:170: sig: {"types":{"Attest":[{"name":"version","type":"uint16"},{"name":"nonce","type":"string"},{"name":"schema","type":"bytes32"},{"name":"recipient","type":"address"},{"name":"time","type":"uint64"},{"name":"expirationTime","type":"uint64"},{"name":"revocable","type":"bool"},{"name":"refUID","type":"bytes32"},{"name":"data","type":"bytes"}],"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}]},"primaryType":"Attest","domain":{"name":"EAS Attestation","version":"1.2.0","chainId":"0x13881","verifyingContract":"0xaEF4103A04090071165F78D45D83A0C0782c2B2a","salt":""},"message":{"data":"0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000036f732b0000000000000000000000000000000000000000000000000000000000","expirationTime":"1704163121","nonce":"0","recipient":"0x0000000000000000000000000000000000000000","refUID":"0x0000000000000000000000000000000000000000000000000000000000000000","revocable":true,"schema":"0x32275eb98dcb8f82848adef9fa52311cc9e83bc6fdb34c5f46ac4b8d957ad3d9","time":"1704163061","version":"1"},"signature":{"r":"0x74bc7fb764136a6427f541a15fc7e126791d3fef64d86208a58437012b6ee666","s":"0x6d120afaf26630f1f53ba03adfb6e428b03ade7b8eb69fe1a2396d9fe4699d65","v":27},"uid":"TODO..."
-			// offchain_test.go:170: sig: {"types":{"Attest":[{"name":"version","type":"uint16"},{"name":"nonce","type":"string"},{"name":"schema","type":"bytes32"},{"name":"recipient","type":"address"},{"name":"time","type":"uint64"},{"name":"expirationTime","type":"uint64"},{"name":"revocable","type":"bool"},{"name":"refUID","type":"bytes32"},{"name":"data","type":"bytes"}],"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}]},"primaryType":"Attest","domain":{"name":"EAS Attestation","version":"1.2.0","chainId":"0x13881","verifyingContract":"0xaEF4103A04090071165F78D45D83A0C0782c2B2a","salt":""},"message":{"data":"0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000036f732b0000000000000000000000000000000000000000000000000000000000","expirationTime":"1704163157","nonce":"0","recipient":"0x0000000000000000000000000000000000000000","refUID":"0x0000000000000000000000000000000000000000000000000000000000000000","revocable":true,"schema":"0x32275eb98dcb8f82848adef9fa52311cc9e83bc6fdb34c5f46ac4b8d957ad3d9","time":"1704163097","version":"1"},"signature":{"r":"0x313669ffbc1e19d71164c1b9bbe4553ef5b2eef4b2e578daa4f5a9a3a41d8a0c","s":"0x69bb9e6262f60325a492c9e0c19e23beadcee8798a207b65ed3baba2228997a6","v":28},"uid":"TODO..."}
+			t.Logf("Proof Message = %v", tt.args.typedData.Message)
+			t.Logf("Proof Signature: %+v", sig.Signature)
 
 			got, err := VerifyOffChainAttestation(tt.args.attester, tt.args.recipient, tt.args.expectTypedData, sig)
 			if (err != nil) != tt.wantErr {

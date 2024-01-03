@@ -2,10 +2,11 @@ package seeauth
 
 import (
 	"encoding/json"
-	"github.com/Taoist-Labs/see-auth-go/proof"
-	"github.com/Taoist-Labs/see-auth-go/signature"
 	"testing"
 	"time"
+
+	"github.com/Taoist-Labs/see-auth-go/proof"
+	"github.com/Taoist-Labs/see-auth-go/signature"
 )
 
 func TestFlow(t *testing.T) {
@@ -40,12 +41,17 @@ func TestFlow(t *testing.T) {
 		return
 	}
 
-	t.Logf("seeAuth = %+v", seeAuth)
-	t.Logf("seeAuth = %+v", seeAuth.Signature)
-	t.Logf("seeAuth = %+v", seeAuth.Proof)
+	//t.Logf("seeAuth = %+v", seeAuth)
+	//t.Logf("seeAuth = %+v", seeAuth.Signature)
+	//t.Logf("seeAuth = %+v", seeAuth.Proof)
 
 	j, _ := json.Marshal(seeAuth)
-	t.Logf("seeAuth JSON = %s", string(j))
+	//t.Logf("seeAuth JSON = %s", string(j))
+
+	var p proof.Proof
+	_ = json.Unmarshal([]byte(seeAuth.Proof.Proof), &p)
+	t.Logf("Proof Message = %v", p.Sig.Message)
+	t.Logf("Proof Signature = %+v", p.Sig.Signature)
 
 	var seeAuth2 SeeAuth
 	_ = json.Unmarshal(j, &seeAuth2)
