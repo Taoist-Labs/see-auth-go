@@ -26,7 +26,7 @@ func SeeDAOAuth(recipient string, seeAuth *SeeAuth) (string, error) {
 	// ---> set proof-used-flag from cache
 
 	// verify signature
-	err = signature.Verify(seeAuth.Wallet, seeAuth.Signature.Nonce, seeAuth.Signature.Message, seeAuth.Signature.Signature)
+	err = signature.Verify(seeAuth.Wallet, seeAuth.Signature.Domain, seeAuth.Signature.Nonce, seeAuth.Signature.Message, seeAuth.Signature.Signature)
 	if err != nil {
 		return "", errors.New("Invalid signature")
 	}

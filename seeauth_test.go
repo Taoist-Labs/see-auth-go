@@ -25,6 +25,7 @@ func TestFlow(t *testing.T) {
 	seeAuth, err := Auth(&SignatureParams{
 		WalletName: WalletNameMetamask,
 		Wallet:     wallet,
+		Domain:     "app.seedao.xyz",
 		Nonce:      nonce,
 		Message:    message,
 		Signature:  sig,

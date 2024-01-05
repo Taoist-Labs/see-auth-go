@@ -14,6 +14,7 @@ type (
 	SignatureParams struct {
 		WalletName WalletName
 		Wallet     string
+		Domain     string
 		Nonce      string
 		Message    string
 		Signature  string
@@ -27,7 +28,7 @@ type (
 
 func Auth(signatureParams *SignatureParams, proofParams *ProofParams) (*SeeAuth, error) {
 	// verify signature
-	err := signature.Verify(signatureParams.Wallet, signatureParams.Nonce, signatureParams.Message, signatureParams.Signature)
+	err := signature.Verify(signatureParams.Wallet, signatureParams.Domain, signatureParams.Nonce, signatureParams.Message, signatureParams.Signature)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +43,7 @@ func Auth(signatureParams *SignatureParams, proofParams *ProofParams) (*SeeAuth,
 		Wallet:     signatureParams.Wallet,
 		WalletName: signatureParams.WalletName,
 		Signature: &Signature{
+			Domain:    signatureParams.Domain,
 			Nonce:     signatureParams.Nonce,
 			Message:   signatureParams.Message,
 			Signature: signatureParams.Signature,

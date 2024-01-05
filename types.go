@@ -10,6 +10,7 @@ const (
 type SeeLogin struct {
 	Wallet     string     `json:"wallet"`
 	Message    string     `json:"message"`
+	Domain     string     `json:"domain"`
 	Signature  string     `json:"signature"`
 	WalletName WalletName `json:"walletName"`
 }
@@ -22,6 +23,7 @@ type (
 		Proof      *Proof     `json:"proof"`
 	}
 	Signature struct {
+		Domain    string `json:"domain"`
 		Nonce     string `json:"nonce"`
 		Message   string `json:"message"`
 		Signature string `json:"signature"`

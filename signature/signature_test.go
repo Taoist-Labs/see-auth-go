@@ -92,7 +92,7 @@ func TestVerify(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			message, signature, _ := Sign(nonce, tt.args.signatureLifetime, privateKey)
 
-			err := Verify(tt.args.wallet, nonce, message, signature)
+			err := Verify(tt.args.wallet, tDomain, nonce, message, signature)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Verify() error = %v, wantErr = %v", err, tt.wantErr)
 			}

@@ -10,15 +10,18 @@ import (
 	"github.com/spruceid/siwe-go"
 )
 
+// flowing constants are only used in `Sign` function
+// and `Sign` function just for testing
 var (
-	chainId = 1
-	version = "1"
+	tChainId = 1
+	tVersion = "1"
 
-	domain    = "app.seedao.xyz"
-	uri       = "https://app.seedao.xyz"
-	statement = "Welcome to SeeDAO!"
+	tDomain    = "app.seedao.xyz"
+	tUri       = "https://app.seedao.xyz"
+	tStatement = "Welcome to SeeDAO!"
 )
 
+// Sign !!~! just for testing ~~!!
 func Sign(nonce string, signatureLifetime time.Duration, privateKey string) (message, signature string, err error) {
 	key, err := crypto.HexToECDSA(privateKey)
 	if err != nil {
@@ -27,13 +30,13 @@ func Sign(nonce string, signatureLifetime time.Duration, privateKey string) (mes
 	address := crypto.PubkeyToAddress(key.PublicKey).Hex()
 
 	options := map[string]interface{}{
-		"statement":      statement,
-		"chainId":        chainId,
-		"version":        version,
+		"statement":      tStatement,
+		"chainId":        tChainId,
+		"version":        tVersion,
 		"issuedAt":       time.Now().UTC().Format(time.RFC3339),
 		"expirationTime": time.Now().UTC().Add(signatureLifetime).Format(time.RFC3339),
 	}
-	m, err := siwe.InitMessage(domain, address, uri, nonce, options)
+	m, err := siwe.InitMessage(tDomain, address, tUri, nonce, options)
 	if err != nil {
 		return
 	}
@@ -55,7 +58,7 @@ func Sign(nonce string, signatureLifetime time.Duration, privateKey string) (mes
 	return
 }
 
-func Verify(wallet, nonce, message, signature string) error {
+func Verify(wallet, domain, nonce, message, signature string) error {
 	m, err := siwe.ParseMessage(message)
 	if err != nil {
 		return err
