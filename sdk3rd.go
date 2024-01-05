@@ -7,6 +7,10 @@ import (
 	"github.com/Taoist-Labs/see-auth-go/signature"
 )
 
+// SeeDAOAuth authenticates a SeeAuth service
+// `recipient` parameter is
+// `seeAuth` parameter is the SeeAuth object, you can parse from the request body commonly.
+// It returns the wallet address if the authentication is successful,otherwise it returns an error
 func SeeDAOAuth(recipient string, seeAuth *SeeAuth) (string, error) {
 	// ---> get proof-used-flag from cache
 

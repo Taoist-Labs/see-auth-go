@@ -3,7 +3,7 @@ module github.com/Taoist-Labs/see-auth-go
 go 1.20
 
 require (
-	github.com/ethereum/go-ethereum v1.13.7
+	github.com/ethereum/go-ethereum v1.13.8
 	github.com/spruceid/siwe-go v0.2.1
 )
 

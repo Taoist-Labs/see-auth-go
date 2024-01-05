@@ -30,19 +30,22 @@ type (
 )
 
 func SignOffChainAttestation(privateKey *ecdsa.PrivateKey, typedData *apitypes.TypedData) (*Sig, error) {
+	// 1 signHash
 	hash, err := signHash(typedData)
 	if err != nil {
 		return nil, err
 	}
+	//fmt.Printf("sign-hash: %v\n", hash)
+	//fmt.Printf("sign-hash: %s\n", hexutil.Encode(hash))
 
+	// 2 signature
 	sig, err := crypto.Sign(hash, privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("generate signatrue error: %s", err)
 	}
-	//fmt.Printf("signature: %s\n", hexutil.Encode(sig))
-	r := hexutil.EncodeBig(new(big.Int).SetBytes(sig[:32]))
-	s := hexutil.EncodeBig(new(big.Int).SetBytes(sig[32:64]))
-	v := uint8(sig[64]) + 27
+	//fmt.Printf("sign-signature: %v\n", sig)
+	//fmt.Printf("sign-signature: %s\n", hexutil.Encode(sig))
+	r, s, v := convertToRSV(sig)
 
 	offChainUID := getOffChainUID(typedData.Message)
 
@@ -89,23 +92,6 @@ func VerifyOffChainAttestation(attester, recipient string, expectTypedData *apit
 		return false, errors.New("Proof Error: attester is zero address")
 	}
 
-	// verify signature
-	bytes := make([]byte, 65)
-	// s
-	bigS, err := hexutil.DecodeBig(sig.Signature.S)
-	if err != nil {
-		return false, fmt.Errorf("Proof Error: decode signature 's' part error: %s", err)
-	}
-	copy(bytes[:32], bigS.Bytes()) // 0~31
-	// r
-	bigR, err := hexutil.DecodeBig(sig.Signature.R)
-	if err != nil {
-		return false, fmt.Errorf("Proof Error: decode signature 'r' part error: %s", err)
-	}
-	copy(bytes[32:64], bigR.Bytes()) // 32~63
-	// v
-	bytes[64] = sig.Signature.V - 27
-	// start verify
 	// <---------------------------
 	// `EIP712Domain` is empty when proof generate by Node SDK
 	if sig.TypedData.Types["EIP712Domain"] == nil {
@@ -128,33 +114,24 @@ func VerifyOffChainAttestation(attester, recipient string, expectTypedData *apit
 		sig.TypedData.Types["Attest"] = append(sig.TypedData.Types["Attest"], apitypes.Type{Name: "nonce", Type: "string"})
 	}
 	// --------------------------->
+	// 1 signHash
 	hash, err := signHash(sig.TypedData)
 	if err != nil {
 		return false, err
 	}
+	//fmt.Printf("verify-hash: %v\n", hash)
+	//fmt.Printf("verify-hash: %s\n", hexutil.Encode(hash))
 
-	//fmt.Printf("crypto.SigToPub('%s', '%s')\n", hexutil.Encode(hash), hexutil.Encode(bytes))
+	// 2 signature
+	sign := convertFromRSV(sig.Signature.R, sig.Signature.S, sig.Signature.V)
+	//fmt.Printf("verify-signature: %v\n", sign)
+	//fmt.Printf("verify-signature: %s\n", hexutil.Encode(sign))
 
-	// method 1
-	pubKey, err := crypto.SigToPub(hash, bytes)
+	pubKey, err := crypto.SigToPub(hash, sign)
 	if err != nil {
 		return false, fmt.Errorf("verify signatrue error: %s", err)
 	}
-	return crypto.PubkeyToAddress(*pubKey).Hex() != attester, nil
-
-	// method 2
-	//privateKey, err := crypto.HexToECDSA("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
-	//publicKey := privateKey.Public()
-	//publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
-	//publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
-	//return crypto.VerifySignature(publicKeyBytes, hash, bytes[:len(bytes)-1]), nil
-
-	// method 3
-	//pubKey, err := crypto.Ecrecover(hash, bytes)
-	//if err != nil {
-	//	return false, fmt.Errorf("verify signatrue error: %s", err)
-	//}
-	//return common.Bytes2Hex(pubKey) != attester, nil
+	return crypto.PubkeyToAddress(*pubKey).Hex() == attester, nil
 }
 
 func signHash(typedData *apitypes.TypedData) ([]byte, error) {
@@ -171,6 +148,34 @@ func signHash(typedData *apitypes.TypedData) ([]byte, error) {
 	// add magic string prefix
 	rawData := []byte(fmt.Sprintf("\x19\x01%s%s", string(domainSeparator), string(typedDataHash)))
 	return crypto.Keccak256(rawData), nil
+}
+
+func convertToRSV(signature []byte) (r, s string, v uint8) {
+	rb := new(big.Int).SetBytes(signature[:32])
+	sb := new(big.Int).SetBytes(signature[32:64])
+	v = uint8(signature[64]) + 27
+	return hexutil.EncodeBig(rb), hexutil.EncodeBig(sb), v
+}
+
+func convertFromRSV(r, s string, v uint8) (signature []byte) {
+	signature = make([]byte, 65)
+
+	// r
+	bigR, err := hexutil.DecodeBig(r)
+	if err != nil {
+		panic(err)
+	}
+	copy(signature[:32], bigR.Bytes()) // 0~31
+	// s
+	bigS, err := hexutil.DecodeBig(s)
+	if err != nil {
+		panic(err)
+	}
+	copy(signature[32:64], bigS.Bytes()) // 32~63
+	// v
+	signature[64] = v - 27
+
+	return
 }
 
 func getOffChainUID(typedDataMessage apitypes.TypedDataMessage) string {

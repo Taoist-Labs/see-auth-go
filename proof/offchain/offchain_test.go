@@ -195,8 +195,8 @@ func TestVerifyOffChainAttestation(t *testing.T) {
 				t.Errorf("SignOffChainAttestation() error = %v", err)
 				return
 			}
-			t.Logf("Proof Message = %v", tt.args.typedData.Message)
-			t.Logf("Proof Signature: %+v", sig.Signature)
+			//t.Logf("Proof Message = %v", tt.args.typedData.Message)
+			//t.Logf("Proof Signature: %+v", sig.Signature)
 
 			got, err := VerifyOffChainAttestation(tt.args.attester, tt.args.recipient, tt.args.expectTypedData, sig)
 			if (err != nil) != tt.wantErr {
@@ -211,16 +211,6 @@ func TestVerifyOffChainAttestation(t *testing.T) {
 }
 
 func Test_getOffChainUID(t *testing.T) {
-	type args struct {
-		version        uint16
-		schema         string
-		recipient      string
-		time           uint64
-		expirationTime uint64
-		revocable      bool
-		refUID         string
-		data           string
-	}
 	tests := []struct {
 		name string
 		args apitypes.TypedDataMessage
