@@ -5,7 +5,13 @@ import (
 
 	"github.com/Taoist-Labs/see-auth-go/proof"
 	"github.com/Taoist-Labs/see-auth-go/signature"
+	"github.com/patrickmn/go-cache"
 )
+
+// in-memory cache for proof-used-flag
+// `defaultExpiration` is proofLifetime, but `cleanUpInterval` is proofLifetime*6 for performance,
+// because even proof-used-flag is expired, it is not necessary to delete it immediately. we prefer performance nor memory-use
+var defaultCache = cache.New(proofLifetime, proofLifetime*6)
 
 // SeeDAOAuth authenticates a SeeAuth service
 // `recipient` parameter is
@@ -13,6 +19,10 @@ import (
 // It returns the wallet address if the authentication is successful,otherwise it returns an error
 func SeeDAOAuth(recipient string, seeAuth *SeeAuth) (string, error) {
 	// ---> get proof-used-flag from cache
+	key := seeAuth.Signature.Nonce // use `signature.nonce` as KEY
+	if _, found := defaultCache.Get(key); found {
+		return "", errors.New("Reuse proof")
+	}
 
 	// proofing proof
 	ok, schemaData, err := proof.Verify(attester, recipient, seeAuth.Proof.Proof)
@@ -24,6 +34,7 @@ func SeeDAOAuth(recipient string, seeAuth *SeeAuth) (string, error) {
 	}
 
 	// ---> set proof-used-flag from cache
+	defaultCache.Set(key, struct{}{}, proofLifetime)
 
 	// verify signature
 	err = signature.Verify(seeAuth.Wallet, seeAuth.Signature.Domain, seeAuth.Signature.Nonce, seeAuth.Signature.Message, seeAuth.Signature.Signature)
