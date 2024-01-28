@@ -2,7 +2,9 @@ package seeauth
 
 import (
 	"errors"
+	"strconv"
 
+	"github.com/Taoist-Labs/see-auth-go/common"
 	"github.com/Taoist-Labs/see-auth-go/proof"
 	"github.com/Taoist-Labs/see-auth-go/signature"
 	"github.com/patrickmn/go-cache"
@@ -22,6 +24,13 @@ func SeeDAOAuth(recipient string, seeAuth *SeeAuth) (string, error) {
 	key := seeAuth.Signature.Nonce // use `signature.nonce` as KEY
 	if _, found := defaultCache.Get(key); found {
 		return "", errors.New("Reuse proof")
+	}
+
+	// verify latest-block-number
+	number, _ := strconv.Atoi(seeAuth.Signature.Nonce[16:])
+	numberOnChain, _ := common.GetLatestBlockNumber()
+	if number != 0 && numberOnChain != 0 && int(numberOnChain)-number > 5 {
+		return "", errors.New("block number too old")
 	}
 
 	// proofing proof
