@@ -14,8 +14,9 @@ var (
 	proofLifetime = 60 * time.Second
 
 	schemaData = &SchemaData{
-		Wallet: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-		Vendor: "os+",
+		Signature: "0x123214hsdkf",
+		Wallet:    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+		Vendor:    "os+",
 	}
 )
 

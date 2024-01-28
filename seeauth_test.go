@@ -32,8 +32,9 @@ func TestFlow(t *testing.T) {
 	}, &ProofParams{
 		Recipient: recipient,
 		Schema: &proof.SchemaData{
-			Wallet: wallet,
-			Vendor: "os+",
+			Signature: sig,
+			Wallet:    wallet,
+			Vendor:    "os+",
 		},
 		PrivateKey: privateKey,
 	})

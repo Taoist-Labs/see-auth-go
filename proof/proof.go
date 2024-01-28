@@ -74,7 +74,7 @@ func Sign(recipient string, proofLifetime time.Duration, schemaData *SchemaData,
 		return "", err
 	}
 
-	encodeData, err := offchain.SchemaEncode(schemaAbiTypes, []any{common.HexToAddress(schemaData.Wallet), schemaData.Vendor})
+	encodeData, err := offchain.SchemaEncode(schemaAbiTypes, []any{schemaData.Signature, common.HexToAddress(schemaData.Wallet), schemaData.Vendor})
 	if err != nil {
 		return "", err
 	}
@@ -142,8 +142,9 @@ func Verify(attester, recipient, proof string) (bool, *SchemaData, error) {
 			return false, nil, err
 		}
 		return true, &SchemaData{
-			Wallet: fmt.Sprintf("%s", encodeData[0]),
-			Vendor: fmt.Sprintf("%s", encodeData[1]),
+			Signature: fmt.Sprintf("%s", encodeData[0]),
+			Wallet:    fmt.Sprintf("%s", encodeData[1]),
+			Vendor:    fmt.Sprintf("%s", encodeData[2]),
 		}, nil
 	} else {
 		return false, nil, nil
@@ -152,9 +153,10 @@ func Verify(attester, recipient, proof string) (bool, *SchemaData, error) {
 
 // ------ ------ ------ ------ ------ ------ ------ ------ ------
 
-var schemaAbiTypes = []string{"address", "string"}
+var schemaAbiTypes = []string{"string", "address", "string"}
 
 type SchemaData struct {
-	Wallet string `json:"wallet"`
-	Vendor string `json:"vendor"`
+	Signature string `json:"signature"`
+	Wallet    string `json:"wallet"`
+	Vendor    string `json:"vendor"`
 }
