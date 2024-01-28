@@ -45,6 +45,11 @@ func SeeDAOAuth(recipient string, seeAuth *SeeAuth) (string, error) {
 	// ---> set proof-used-flag from cache
 	defaultCache.Set(key, struct{}{}, proofLifetime)
 
+	// signature in proof must be same to signature in signature
+	if schemaData.Signature != seeAuth.Signature.Signature {
+		return "", errors.New("Invalid signature")
+	}
+
 	// verify signature
 	err = signature.Verify(seeAuth.Wallet, seeAuth.Signature.Domain, seeAuth.Signature.Nonce, seeAuth.Signature.Message, seeAuth.Signature.Signature)
 	if err != nil {
